@@ -25,10 +25,12 @@ services:
         fromDatabase:
           name: logen-store-db
           property: connectionString
-      # Fill these in the Render dashboard (Secret type) before going live:
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
+      # ✔ Non-secret — already filled for you:
       - key: ADMIN_TELEGRAM_USER_IDS
+        value: "8325492974"        # your Telegram account = first SUPER_ADMIN
+      # ⚠ SECRET — paste this ONE into Render dashboard (Environment tab).
+      # Never commit the real token to GitHub (anyone who sees it controls your bot):
+      - key: TELEGRAM_BOT_TOKEN
         sync: false
       # - key: PAYMENT_WEBHOOK_SECRET
       #   sync: false
