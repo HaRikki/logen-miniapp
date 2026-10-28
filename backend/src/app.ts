@@ -136,6 +136,10 @@ export function createApp() {
       res.status(413).json({ error: { code: "TOO_LARGE", message: "Request body too large" } });
       return;
     }
+    if (err?.code === "LIMIT_FILE_SIZE" || err?.code === "LIMIT_UNEXPECTED_FILE") {
+      res.status(413).json({ error: { code: err.code, message: "File too large or unexpected field" } });
+      return;
+    }
     console.error("[unhandled]", err);
     res.status(500).json({ error: { code: "INTERNAL", message: "Unexpected server error" } });
   });

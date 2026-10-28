@@ -20,6 +20,6 @@
     "telegram:menu": "node scripts/set-bot-menu.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20 <23"
   }
 }

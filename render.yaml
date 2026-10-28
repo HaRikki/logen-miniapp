@@ -1,0 +1,42 @@
+# Render.com blueprint — push this file to your repo root; Render reads it.
+# (Or create the services manually in the dashboard using the same values.)
+services:
+  - type: web
+    name: logen-miniapp
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: node backend/dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION            # Node 22 — project requires ">=20 <23" (.nvmrc)
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: APP_BASE_URL
+        value: https://logen-miniapp.onrender.com   # <-- your service URL
+      - key: SESSION_SECRET
+        generateValue: true           # Render generates a strong secret at create time
+      - key: DB_CLIENT
+        value: postgres
+      - key: DATABASE_URL
+        fromDatabase:
+          name: logen-store-db
+          property: connectionString
+      # Fill these in the Render dashboard (Secret type) before going live:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ADMIN_TELEGRAM_USER_IDS
+        sync: false
+      # - key: PAYMENT_WEBHOOK_SECRET
+      #   sync: false
+
+databases:
+  - name: logen-store-db
+    databaseName: digital_store
+    user: digital_store
+    plan: free          # NOTE: Render free DBs expire after 30 days — use any external
+                        # PostgreSQL in production and just paste DATABASE_URL instead.
+    postgresMajorVersion: "16"

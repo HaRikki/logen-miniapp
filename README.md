@@ -110,7 +110,49 @@ digital-store/
   webhook settle` into `services/deposits.ts` / orders pay route; schema and API
   shape (`payments`, `payment_webhook_events`) are in place.
 
-## 6 · Production & deployment
+## 6a · Render.com deploy (tested config — fixes the Node-26 build failure)
+
+> If your build log shows `Running build command 'npm install && npm run build'` with
+> **Node.js 26** pulled in via `engines >=20`, that was the failure cause: native build
+> tooling for Node 26. The project now pins Node 22 (`engines: ">=20 <23"`, `.nvmrc`, and a
+> `NODE_VERSION=22` env in `render.yaml`) and `better-sqlite3` is an **optional** dependency
+> upgraded to v13, so a PostgreSQL production build never depends on it.
+
+**Steps (dashboard, or use the bundled `render.yaml` blueprint):**
+
+1. New → Web Service → connect `HaRikki/logen-miniapp`.
+2. Runtime **Node**, Build command `npm install && npm run build`,
+   Start command `node backend/dist/index.js`.
+3. Environment (Advanced → Environment Variables) — see `render.yaml` for the full list:
+   | Key | Value |
+   | --- | --- |
+   | `NODE_VERSION` | `22` |
+   | `NODE_ENV` | `production` |
+   | `APP_BASE_URL` | `https://<your-service>.onrender.com` (or custom domain) |
+   | `SESSION_SECRET` | secret — e.g. Render's generated value |
+   | `DB_CLIENT` | `postgres` |
+   | `DATABASE_URL` | your Postgres connection string (see DB rules below!) |
+   | `TELEGRAM_BOT_TOKEN` / `ADMIN_TELEGRAM_USER_IDS` | your bot + admin Telegram IDs |
+4. **Database — mandatory for a real store:** Render instance disks are *ephemeral*.
+   With SQLite your orders/balances would be lost on every redeploy. Create a
+   **PostgreSQL** (Render Internal DB, or external providers like Neon/Supabase —
+   for external, use the pooled/direct URL with `sslmode=require`) and set
+   `DB_CLIENT=postgres` + `DATABASE_URL`. Migrations run automatically on boot
+   (`backend/dist/index.js`), and production is never auto-seeded.
+5. **Uploads persistence:** payment proofs, product images and digital files are written
+   under `UPLOAD_DIR` (default `./data/uploads`). On Render attach a **Disk** (paid plans)
+   mounted e.g. at `/var/data` and set `UPLOAD_DIR=/var/data/uploads`; without one, files
+   reset on redeploy. (An S3-compatible adapter slot is prepared in
+   `backend/src/routes/admin/catalog.ts → saveFile`.)
+6. Free-tier `logen-miniapp` URL must be **https** — Telegram Mini Apps require HTTPS.
+7. After deploy: open `https://<url>/api/health` (should return `{"ok":true}`),
+   put your Telegram ID in `ADMIN_TELEGRAM_USER_IDS`, sign in once via the bot →
+   you're SUPER_ADMIN. `DEMO login` is automatically OFF in production.
+
+**Still failing?** Copy the *whole* build log (bottom-most red error lines matter) and set
+`NODE_VERSION=22` first — the vast majority of render build failures are Node-version/native-module issues.
+
+## 6b · Other hosting
 
 ```bash
 # Docker (Postgres + app, migrations run on boot)
