@@ -1,0 +1,25 @@
+{
+  "name": "digital-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Digital Store \u2014 full-stack digital product store for Website + Telegram Mini App",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w frontend && npm run build -w backend",
+    "start": "node backend/dist/index.js",
+    "migrate": "npm run migrate -w backend",
+    "migrate:pg": "npm run migrate:pg -w backend",
+    "seed": "npm run seed -w backend",
+    "test": "npm run test -w backend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "telegram:menu": "node scripts/set-bot-menu.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

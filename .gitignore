@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+data/
+*.sqlite3
+.env
+.env.local
+.DS_Store
+coverage/
+npm-debug.log*
+.vite/
+frontend/dist/
+backend/dist/
